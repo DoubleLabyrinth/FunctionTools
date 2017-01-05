@@ -1,6 +1,7 @@
 #ifndef MP3_H_INCLUDED
 #define MP3_H_INCLUDED
 #include <iostream>
+#include <vector>
 #include <windows.h>
 //------------------------------------Flags in ID3V2Header
 #define Unsynchronisation_Flag 0x80
@@ -114,18 +115,25 @@ typedef struct _ID3V2FrameHeader {
     BYTE Size[4];
     BYTE Flags[2];
 } ID3V2FrameHeader, *LPID3V2FrameHeader;
+#define SizeInBYTEToUINT32(x) (UINT32)(x[3]) + 0x100 * x[2] + 0x10000 * x[1] + 0x1000000 * x[0]
 
-class ID3V2 {
+typedef struct _ID3V2Frame {
+    ID3V2FrameHeader Header;
+    BYTE* FrameData;
+} ID3V2Frame, *LPID3V2Frame;
+
+class ID3V2Tag {
 private:
     LPID3V2Header ID3V2_Header;
     LPID3V2ExtendedHeader ID3V2_ExtendedHeader;
-    UINT32* TotalFrameCRC;
+    std::vector<LPID3V2Frame> ID3V2_Frames;
+    UINT32 TotalFrameCRC;
     BOOL Valid;
 public:
-    ID3V2();
-    ID3V2(LPTSTR FilePath);
+    ID3V2Tag();
+    ID3V2Tag(LPTSTR FilePath);
 
-    ~ID3V2();
+    ~ID3V2Tag();
 
     BOOL IsValid();    //To check wheather ID3V2_Header is a valid ID3V2Header.
 
@@ -136,6 +144,11 @@ public:
     BYTE GetID3V2MajorVersion();
     BYTE GetID3V2ReversionNumber();
     UINT32 GetID3V2FrameSize();
+
+    UINT32 GetID3V2FrameCount();
+
+    const LPID3V2Frame GetID3V2Frame(UINT32 i);
 };
+
 
 #endif // MP3_H_INCLUDED
