@@ -3,22 +3,6 @@
 #include <iostream>
 #include <vector>
 #include <windows.h>
-//------------------------------------Flags in ID3V2Header
-#define Unsynchronisation_Flag 0x80
-#define ExtendedHeader_Flag 0x40
-#define ExperimentalIndicator_Flag 0x20
-
-#define FooterPresentFlag 0x10
-#define TagIsAnUpdateFlag 0x40
-#define CRCDataPresentFlag 0x20
-#define TagRestrictionsFlag 0x10
-//--------------------------------------Flags in ID3V2FrameHeader
-#define TagAlterPreservation 0x80
-#define FileAlterPreservation 0x40
-#define ReadOnly 0x20
-#define Compression 0x8000
-#define Encryption 0x4000
-#define GroupingIdentity 0x2000
 //-------------------------------------FrameID in ID3V2FrameHeader
 /*#define AENC 0x434E4541    //[[#sec4.20|Audio encryption]]
 #define APIC 0x43495041    //[#sec4.15 Attached picture]
@@ -97,23 +81,38 @@
 
 
 typedef struct _ID3V2Header {
-    char Header[3];  //must be "ID3"(0x49 0x44 0x33)
+    char Head[3];  //must be "ID3"(0x49 0x44 0x33)
     BYTE MajorVersion;
     BYTE RevisionNumber;
-    BYTE Flags;
+    struct {
+        BYTE Unsynchronisation_Flag : 1;
+        BYTE ExtendedHeader_Flag : 1;
+        BYTE ExperimentalIndicator_Flag : 1;
+        BYTE Reserved : 5;
+    } Flags;
     BYTE Size[4];
 } ID3V2Header, *LPID3V2Header;
 
 typedef struct _ID3V2ExtendedHeader {
     BYTE ExtendedHeaderSize[4];
-    BYTE ExtendedFlags[2];
+    UINT16 HasTotalFrameCRC : 1;
+    UINT16 Reserved : 15;
     BYTE SizeOfPadding[4];
 } ID3V2ExtendedHeader, *LPID3V2ExtendedHeader;
 
 typedef struct _ID3V2FrameHeader {
     char FrameID[4];
     BYTE Size[4];
-    BYTE Flags[2];
+    struct {
+        UINT16 TagAlterPreservation_Flag : 1;
+        UINT16 FileAlterPreservation_Flag : 1;
+        UINT16 ReadOnly : 1;
+        UINT16 Reserved0 : 5;
+        UINT16 Compression_Flag : 1;
+        UINT16 Encryption_Flag : 1;
+        UINT16 GroupingIdentity_Flag : 1;
+        UINT16 Reserved1 : 5;
+    } Flags;
 } ID3V2FrameHeader, *LPID3V2FrameHeader;
 #define SizeInBYTEToUINT32(x) (UINT32)(x[3]) + 0x100 * x[2] + 0x10000 * x[1] + 0x1000000 * x[0]
 
@@ -121,6 +120,22 @@ typedef struct _ID3V2Frame {
     ID3V2FrameHeader Header;
     BYTE* FrameData;
 } ID3V2Frame, *LPID3V2Frame;
+
+typedef struct _MPEGFrameHeader {
+    UINT32 FrameSyncWord : 11;
+    UINT32 MPEGVersionID : 2;
+    UINT32 LayerID : 2;
+    UINT32 WithoutCRC : 1;
+    UINT32 BitrateIndex : 4;
+    UINT32 FrequencyIndex : 2;
+    UINT32 PaddingBit : 1;
+    UINT32 PrivateBit : 1;
+    UINT32 ChannelMode : 2;
+    UINT32 ModeExtention : 2;
+    UINT32 CopyRight : 1;
+    UINT32 Original : 1;
+    UINT32 Emphasis : 2;
+} MPEGFrameHeader, *LPMPEGFrameHeader;
 
 class ID3V2Tag {
 private:
@@ -137,18 +152,25 @@ public:
 
     BOOL IsValid();    //To check wheather ID3V2_Header is a valid ID3V2Header.
 
-    BOOL HasUnsynchronisationFlag();
-    BOOL HasExtendedHeaderFlag();
-    BOOL HasExperimentalIndicatorFlag();
-
     BYTE GetID3V2MajorVersion();
     BYTE GetID3V2ReversionNumber();
     UINT32 GetID3V2FrameSize();
-
     UINT32 GetID3V2FrameCount();
-
     const LPID3V2Frame GetID3V2Frame(UINT32 i);
 };
 
+typedef struct _MPEGFrame {
+    MPEGFrameHeader Header;
+    BYTE* FrameData;
+} MPEGFrame, *LPMPEGFrame;
+
+class MPEGSegment {
+private:
+    std::vector<LPMPEGFrame> MPEGFrames;
+    BOOL Valid;
+public:
+    MPEGSegment();
+    MPEGSegment(LPCTSTR FilePath);
+};
 
 #endif // MP3_H_INCLUDED

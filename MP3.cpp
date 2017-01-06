@@ -12,6 +12,7 @@ ID3V2Tag::ID3V2Tag(LPTSTR FilePath) {
     ID3V2_ExtendedHeader = NULL;
     TotalFrameCRC = 0;
     Valid = FALSE;
+
     HANDLE hSourceFile = CreateFile(FilePath,
                                     GENERIC_READ,
                                     FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -20,17 +21,18 @@ ID3V2Tag::ID3V2Tag(LPTSTR FilePath) {
                                     FILE_ATTRIBUTE_NORMAL,
                                     NULL);
     if(hSourceFile == INVALID_HANDLE_VALUE) {
-        std::cerr << "Error Code: " << GetLastError() << std::endl;
+        std::cerr << "Error: Failed to create HANDLE hSourceFile." << std::endl;
         return;
-    } // If pass, pay attention to CloseHandle(hSourceFile);
+    }
+    // If pass, pay attention to CloseHandle(hSourceFile);
     //start to read ID3V2 header data
     ID3V2_Header = (LPID3V2Header)malloc(sizeof(ID3V2Header));      // Pay attention to free.
     if(ID3V2_Header == NULL) {
-        std::cerr << "Error, could not malloc ID3V2_Header" << std::endl;
+        std::cerr << "Error: Could not allocate memory for ID3V2_Header." << std::endl;
         return;
     }
     if(ReadFile(hSourceFile, ID3V2_Header, sizeof(ID3V2Header), NULL, NULL) == FALSE) {
-        std::cerr << "Error Code: " << GetLastError() << std::endl;
+        std::cerr << "Error: Failed to execute function ReadFile while loading ID3V2_Header." << std::endl;
         CloseHandle(hSourceFile);
         free(ID3V2_Header);
         ID3V2_Header = NULL;
@@ -38,38 +40,42 @@ ID3V2Tag::ID3V2Tag(LPTSTR FilePath) {
     }
     Valid = IsValid();
     if(!Valid) {
-        std::cerr << "Error: This is not a valid MP3 file." << std::endl;
+        std::cerr << "Error: Could not read ID3V2 Tag." << std::endl;
         CloseHandle(hSourceFile);
         free(ID3V2_Header);
         ID3V2_Header = NULL;
+        Valid = FALSE;
         return;
     }
-    if(HasExtendedHeaderFlag() == TRUE) {
+    if(ID3V2_Header->Flags.ExtendedHeader_Flag == 1) {
         ID3V2_ExtendedHeader = (LPID3V2ExtendedHeader)malloc(sizeof(ID3V2ExtendedHeader));
         if(ID3V2_ExtendedHeader == NULL) {
-            std::cerr << "Error, could not malloc ID3V2_ExtendedHeader" << std::endl;
+            std::cerr << "Error: Could not allocate memory for ID3V2_ExtendedHeader." << std::endl;
             CloseHandle(hSourceFile);
             free(ID3V2_Header);
             ID3V2_Header = NULL;
+            Valid = FALSE;
             return;
         }
         if(ReadFile(hSourceFile, ID3V2_ExtendedHeader, sizeof(ID3V2ExtendedHeader), NULL, NULL) == FALSE) {
-            std::cerr << "Error Code: " << GetLastError() << std::endl;
+            std::cerr << "Error: Failed to execute function ReadFile while loading ID3V2_ExtendedHeader." << std::endl;
             CloseHandle(hSourceFile);
-            free(ID3V2_ExtendedHeader);
             free(ID3V2_Header);
-            ID3V2_ExtendedHeader = NULL;
+            free(ID3V2_ExtendedHeader);
             ID3V2_Header = NULL;
+            ID3V2_ExtendedHeader = NULL;
+            Valid = FALSE;
             return;
         }
-        if(ID3V2_ExtendedHeader->ExtendedFlags[0] == 0x80) {
+        if(ID3V2_ExtendedHeader->HasTotalFrameCRC == 1) {
             if(ReadFile(hSourceFile, &TotalFrameCRC, sizeof(UINT32), NULL, NULL) == FALSE) {
-                std::cerr << "Error Code: " << GetLastError() << std::endl;
+                std::cerr << "Error: Failed to execute function ReadFile while loading TotalFrameCRC." << std::endl;
                 CloseHandle(hSourceFile);
-                free(ID3V2_ExtendedHeader);
                 free(ID3V2_Header);
-                ID3V2_ExtendedHeader = NULL;
+                free(ID3V2_ExtendedHeader);
                 ID3V2_Header = NULL;
+                ID3V2_ExtendedHeader = NULL;
+                Valid = FALSE;
                 TotalFrameCRC = 0;
                 return;
             }
@@ -79,57 +85,66 @@ ID3V2Tag::ID3V2Tag(LPTSTR FilePath) {
     do{
         UINT32 tmpFrameID = 0;
         if(ReadFile(hSourceFile, &tmpFrameID, sizeof(UINT32), NULL, NULL) == FALSE) {
-            std::cerr << "Error Code: " << GetLastError() << std::endl;
+            std::cerr << "Error: Failed to execute function ReadFile while loading tmpFrameID." << std::endl;
             CloseHandle(hSourceFile);
-            free(ID3V2_ExtendedHeader);
             free(ID3V2_Header);
-            ID3V2_ExtendedHeader = NULL;
+            free(ID3V2_ExtendedHeader);
             ID3V2_Header = NULL;
+            ID3V2_ExtendedHeader = NULL;
+            Valid = FALSE;
             TotalFrameCRC = 0;
             return;
         }
         if(tmpFrameID == 0) break;
         LPID3V2Frame tmpLPID3V2Frame = (LPID3V2Frame)malloc(sizeof(LPID3V2Frame));
         if(tmpLPID3V2Frame == NULL) {
-            std::cerr << "Error, could not malloc tmpLPID3V2Frame" << std::endl;
+            std::cerr << "Error: Could not allocate memory for tmpLPID3V2Frame." << std::endl;
             CloseHandle(hSourceFile);
             free(ID3V2_Header);
             free(ID3V2_ExtendedHeader);
             ID3V2_Header = NULL;
             ID3V2_ExtendedHeader = NULL;
+            Valid = FALSE;
             TotalFrameCRC = 0;
             return;
         }
         *(UINT32*)(&(tmpLPID3V2Frame->Header.FrameID)) = tmpFrameID;
         if(ReadFile(hSourceFile, &(tmpLPID3V2Frame->Header.Size), sizeof(ID3V2FrameHeader) - sizeof(tmpFrameID), NULL, NULL) == FALSE) {
-            std::cerr << "Error Code: " << GetLastError() << std::endl;
+            std::cerr << "Error: Failed to execute function ReadFile while loading tmpLPID3V2Frame->Header.Size." << std::endl;
             CloseHandle(hSourceFile);
             free(ID3V2_Header);
             free(ID3V2_ExtendedHeader);
+            free(tmpLPID3V2Frame);
             ID3V2_Header = NULL;
             ID3V2_ExtendedHeader = NULL;
+            Valid = FALSE;
             TotalFrameCRC = 0;
             return;
         }
         if(SizeInBYTEToUINT32(tmpLPID3V2Frame->Header.Size) > 0) {
             tmpLPID3V2Frame->FrameData = (BYTE*)malloc(SizeInBYTEToUINT32(tmpLPID3V2Frame->Header.Size));
             if(tmpLPID3V2Frame->FrameData == NULL) {
-                std::cerr << "Error, could not malloc tmpLPID3V2Frame->FrameData" << std::endl;
+                std::cerr << "Error: Could not allocate memory for tmpLPID3V2Frame->FrameData." << std::endl;
                 CloseHandle(hSourceFile);
                 free(ID3V2_Header);
                 free(ID3V2_ExtendedHeader);
+                free(tmpLPID3V2Frame);
                 ID3V2_Header = NULL;
                 ID3V2_ExtendedHeader = NULL;
+                Valid = FALSE;
                 TotalFrameCRC = 0;
                 return;
             }
             if(ReadFile(hSourceFile, tmpLPID3V2Frame->FrameData, SizeInBYTEToUINT32(tmpLPID3V2Frame->Header.Size), NULL, NULL) == FALSE) {
-                std::cerr << "Error Code: " << GetLastError() << std::endl;
+                std::cerr << "Error: Failed to execute function ReadFile while loading tmpLPID3V2Frame->FrameData." << std::endl;
                 CloseHandle(hSourceFile);
                 free(ID3V2_Header);
                 free(ID3V2_ExtendedHeader);
+                free(tmpLPID3V2Frame->FrameData);
+                free(tmpLPID3V2Frame);
                 ID3V2_Header = NULL;
                 ID3V2_ExtendedHeader = NULL;
+                Valid = FALSE;
                 TotalFrameCRC = 0;
                 return;
             }
@@ -142,29 +157,14 @@ ID3V2Tag::ID3V2Tag(LPTSTR FilePath) {
 ID3V2Tag::~ID3V2Tag() {
     free(ID3V2_Header);
     free(ID3V2_ExtendedHeader);
+    UINT32 ID3V2_FramesCount = ID3V2_Frames.size();
+    for(UINT32 i = 0; i < ID3V2_FramesCount; i++) free(ID3V2_Frames[i]);
+    ID3V2_Frames.clear();
 }
 
 BOOL ID3V2Tag::IsValid() {
     if(ID3V2_Header == NULL) return FALSE;
-    if(ID3V2_Header->Header[0] == 'I' && ID3V2_Header->Header[1] == 'D' && ID3V2_Header->Header[2] == '3' && (ID3V2_Header->Flags & 0x1F) == 0) return TRUE;
-    return FALSE;
-}
-
-BOOL ID3V2Tag::HasUnsynchronisationFlag() {
-    if(!Valid) return FALSE;
-    if((ID3V2_Header->Flags & Unsynchronisation_Flag) != 0) return TRUE;
-    return FALSE;
-}
-
-BOOL ID3V2Tag::HasExtendedHeaderFlag() {
-    if (!Valid) return FALSE;
-    if((ID3V2_Header->Flags & ExtendedHeader_Flag) != 0) return TRUE;
-    return FALSE;
-}
-
-BOOL ID3V2Tag::HasExperimentalIndicatorFlag() {
-    if(!Valid) return FALSE;
-    if((ID3V2_Header->Flags & ExperimentalIndicator_Flag) != 0) return TRUE;
+    if(ID3V2_Header->Head[0] == 'I' && ID3V2_Header->Head[1] == 'D' && ID3V2_Header->Head[2] == '3' && ID3V2_Header->Flags.Reserved == 0) return TRUE;
     return FALSE;
 }
 
@@ -187,4 +187,12 @@ UINT32 ID3V2Tag::GetID3V2FrameCount() {
 
 const LPID3V2Frame ID3V2Tag::GetID3V2Frame(UINT32 i) {
     return ID3V2_Frames[i];
+}
+
+MPEGSegment::MPEGSegment() {
+    Valid = FALSE;
+}
+
+MPEGSegment::MPEGSegment(LPCTSTR FilePath) {
+
 }
