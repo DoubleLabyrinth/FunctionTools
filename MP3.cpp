@@ -194,5 +194,58 @@ MPEGSegment::MPEGSegment() {
 }
 
 MPEGSegment::MPEGSegment(LPCTSTR FilePath) {
+    Valid = FALSE;
+
+    HANDLE hSourceFile = CreateFile(FilePath,
+                                    GENERIC_READ,
+                                    FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                    NULL,
+                                    OPEN_EXISTING,
+                                    FILE_ATTRIBUTE_NORMAL,
+                                    NULL);
+    if(hSourceFile == INVALID_HANDLE_VALUE) {
+        std::cerr << "Error: Failed to create HANDLE hSourceFile." << std::endl;
+        return;
+    }
+    ID3V2Header tmpID3V2Header;
+    if(ReadFile(hSourceFile, &tmpID3V2Header, sizeof(ID3V2Header), NULL, NULL) == FALSE) {
+        std::cerr << "Error: Failed to execute function ReadFile while loading tmpID3V2Header." << std::endl;
+        CloseHandle(hSourceFile);
+        return;
+    }
+    if(SetFilePointer(hSourceFile, SizeInBYTEToUINT32(tmpID3V2Header.Size), NULL, FILE_CURRENT) == INVALID_SET_FILE_POINTER) {
+        std::cerr << "Error: Failed to execute function SetFilePointer." << std::endl;
+        CloseHandle(hSourceFile);
+        return;
+    }
+    do {
+        LPMPEGFrame tmpLPMPEGFrame = (LPMPEGFrame)malloc(sizeof(MPEGFrame));
+        if(tmpLPMPEGFrame == NULL) {
+            std::cerr << "Error: Failed to allocate memory for tmpLPMPEGFrame." << std:: endl;
+            CloseHandle(hSourceFile);
+            return;
+        }
+        if(ReadFile(hSourceFile, &(tmpLPMPEGFrame->Header), sizeof(MPEGFrameHeader), NULL, NULL) == FALSE) {
+            std::cerr << "Error: Failed to execute function ReadFile while loading tmpLPMPEGFrame->Header." << std::endl;
+            CloseHandle(hSourceFile);
+            free(tmpLPMPEGFrame);
+            return;
+        }
+        if(tmpLPMPEGFrame->Header.FrameSyncWord != 0x7FF) {
+            std::cerr << "Error: Not a valid MPEG frame." << std::endl;
+            CloseHandle(hSourceFile);
+            free(tmpLPMPEGFrame);
+            return;
+        }
+        UINT32 FrameSize = 0;
+        switch(tmpLPMPEGFrame->Header.LayerID) {
+            //ToDo
+        }
+        //ToDo
+    } while(TRUE);
+    //ToDo
+}
+
+UINT32 MPEGSegment::GetSamplingFrequency() {
 
 }

@@ -3,6 +3,14 @@
 #include <iostream>
 #include <vector>
 #include <windows.h>
+
+#define MPEG25 0
+#define MPEG20 2
+#define MPEG10 3
+#define Layer3 1
+#define Layer2 2
+#define Layer1 3
+
 //-------------------------------------FrameID in ID3V2FrameHeader
 /*#define AENC 0x434E4541    //[[#sec4.20|Audio encryption]]
 #define APIC 0x43495041    //[#sec4.15 Attached picture]
@@ -79,6 +87,10 @@
 #define WPUB 0x42555057    //[#WPUB Publishers official webpage]
 #define WXXX 0x58585857    //[#WXXX User defined URL link frame]*/
 
+const UINT32 SamplingFrequency[4][4] = {{11025, 12000, 8000, 0},
+                                        {0, 0, 0, 0},
+                                        {22050, 24000, 16000, 0},
+                                        {44100, 48000, 32000, 0}};
 
 typedef struct _ID3V2Header {
     char Head[3];  //must be "ID3"(0x49 0x44 0x33)
@@ -171,6 +183,8 @@ private:
 public:
     MPEGSegment();
     MPEGSegment(LPCTSTR FilePath);
+
+    UINT32 GetSamplingFrequency();
 };
 
 #endif // MP3_H_INCLUDED
