@@ -93,6 +93,7 @@ ID3V2Tag::ID3V2Tag(LPTSTR FilePath) {
             ID3V2_ExtendedHeader = NULL;
             Valid = FALSE;
             TotalFrameCRC = 0;
+            ClearID3V2_Frames();
             return;
         }
         if(tmpFrameID == 0) break;
@@ -106,6 +107,7 @@ ID3V2Tag::ID3V2Tag(LPTSTR FilePath) {
             ID3V2_ExtendedHeader = NULL;
             Valid = FALSE;
             TotalFrameCRC = 0;
+            ClearID3V2_Frames();
             return;
         }
         *(UINT32*)(&(tmpLPID3V2Frame->Header.FrameID)) = tmpFrameID;
@@ -119,6 +121,7 @@ ID3V2Tag::ID3V2Tag(LPTSTR FilePath) {
             ID3V2_ExtendedHeader = NULL;
             Valid = FALSE;
             TotalFrameCRC = 0;
+            ClearID3V2_Frames();
             return;
         }
         if(SizeInBYTEToUINT32(tmpLPID3V2Frame->Header.Size) > 0) {
@@ -133,6 +136,7 @@ ID3V2Tag::ID3V2Tag(LPTSTR FilePath) {
                 ID3V2_ExtendedHeader = NULL;
                 Valid = FALSE;
                 TotalFrameCRC = 0;
+                ClearID3V2_Frames();
                 return;
             }
             if(ReadFile(hSourceFile, tmpLPID3V2Frame->FrameData, SizeInBYTEToUINT32(tmpLPID3V2Frame->Header.Size), NULL, NULL) == FALSE) {
@@ -146,6 +150,7 @@ ID3V2Tag::ID3V2Tag(LPTSTR FilePath) {
                 ID3V2_ExtendedHeader = NULL;
                 Valid = FALSE;
                 TotalFrameCRC = 0;
+                ClearID3V2_Frames();
                 return;
             }
         }
@@ -157,9 +162,7 @@ ID3V2Tag::ID3V2Tag(LPTSTR FilePath) {
 ID3V2Tag::~ID3V2Tag() {
     free(ID3V2_Header);
     free(ID3V2_ExtendedHeader);
-    UINT32 ID3V2_FramesCount = ID3V2_Frames.size();
-    for(UINT32 i = 0; i < ID3V2_FramesCount; i++) free(ID3V2_Frames[i]);
-    ID3V2_Frames.clear();
+    ClearID3V2_Frames();
 }
 
 BOOL ID3V2Tag::IsValid() {
@@ -178,7 +181,7 @@ BYTE ID3V2Tag::GetID3V2ReversionNumber() {
 
 UINT32 ID3V2Tag::GetID3V2FrameSize() {
     if(!Valid) return 0;
-    return ((((((UINT32)ID3V2_Header->Size[0] << 7) + ID3V2_Header->Size[1]) << 7) + ID3V2_Header->Size[2]) << 7) + ID3V2_Header->Size[3];
+    return CalculateSize(ID3V2_Header->Size);
 }
 
 UINT32 ID3V2Tag::GetID3V2FrameCount() {
@@ -189,11 +192,20 @@ const LPID3V2Frame ID3V2Tag::GetID3V2Frame(UINT32 i) {
     return ID3V2_Frames[i];
 }
 
-MPEGSegment::MPEGSegment() {
+void ID3V2Tag::ClearID3V2_Frames() {
+    UINT32 ID3V2_FramesCount = ID3V2_Frames.size();
+    for(UINT32 i = 0; i < ID3V2_FramesCount; i++) {
+        free(ID3V2_Frames[i]->FrameData);
+        free(ID3V2_Frames[i]);
+    }
+    ID3V2_Frames.clear();
+}
+
+MPEGTag::MPEGTag() {
     Valid = FALSE;
 }
 
-MPEGSegment::MPEGSegment(LPCTSTR FilePath) {
+MPEGTag::MPEGTag(LPCTSTR FilePath) {
     Valid = FALSE;
 
     HANDLE hSourceFile = CreateFile(FilePath,
@@ -213,7 +225,7 @@ MPEGSegment::MPEGSegment(LPCTSTR FilePath) {
         CloseHandle(hSourceFile);
         return;
     }
-    if(SetFilePointer(hSourceFile, SizeInBYTEToUINT32(tmpID3V2Header.Size), NULL, FILE_CURRENT) == INVALID_SET_FILE_POINTER) {
+    if(SetFilePointer(hSourceFile, CalculateSize(tmpID3V2Header.Size), NULL, FILE_CURRENT) == INVALID_SET_FILE_POINTER) {
         std::cerr << "Error: Failed to execute function SetFilePointer." << std::endl;
         CloseHandle(hSourceFile);
         return;
@@ -223,29 +235,97 @@ MPEGSegment::MPEGSegment(LPCTSTR FilePath) {
         if(tmpLPMPEGFrame == NULL) {
             std::cerr << "Error: Failed to allocate memory for tmpLPMPEGFrame." << std:: endl;
             CloseHandle(hSourceFile);
+            ClearMPEGFrames();
             return;
         }
         if(ReadFile(hSourceFile, &(tmpLPMPEGFrame->Header), sizeof(MPEGFrameHeader), NULL, NULL) == FALSE) {
             std::cerr << "Error: Failed to execute function ReadFile while loading tmpLPMPEGFrame->Header." << std::endl;
             CloseHandle(hSourceFile);
             free(tmpLPMPEGFrame);
+            ClearMPEGFrames();
             return;
         }
-        if(tmpLPMPEGFrame->Header.FrameSyncWord != 0x7FF) {
-            std::cerr << "Error: Not a valid MPEG frame." << std::endl;
-            CloseHandle(hSourceFile);
-            free(tmpLPMPEGFrame);
-            return;
-        }
+        if(tmpLPMPEGFrame->Header.FrameSyncWord0 != 0xFF || tmpLPMPEGFrame->Header.FrameSyncWord1 != 0x07) break;
         UINT32 FrameSize = 0;
         switch(tmpLPMPEGFrame->Header.LayerID) {
-            //ToDo
+            case Layer1:
+                FrameSize = (12 * GetBitrate(tmpLPMPEGFrame->Header.MPEGVersionID, tmpLPMPEGFrame->Header.LayerID, tmpLPMPEGFrame->Header.BitrateIndex) / SamplingFrequencyTable[tmpLPMPEGFrame->Header.MPEGVersionID][tmpLPMPEGFrame->Header.FrequencyIndex] + tmpLPMPEGFrame->Header.PaddingBit) << 2;
+            case Layer2:
+            case Layer3:
+                FrameSize = 144 * GetBitrate(tmpLPMPEGFrame->Header.MPEGVersionID, tmpLPMPEGFrame->Header.LayerID, tmpLPMPEGFrame->Header.BitrateIndex) / SamplingFrequencyTable[tmpLPMPEGFrame->Header.MPEGVersionID][tmpLPMPEGFrame->Header.FrequencyIndex] + tmpLPMPEGFrame->Header.PaddingBit;
         }
-        //ToDo
+        tmpLPMPEGFrame->FrameData = (BYTE*)malloc(FrameSize - sizeof(MPEGFrameHeader));
+        if(tmpLPMPEGFrame->FrameData == NULL) {
+            std::cerr << "Error: Could not allocate memory for tmpLPMPEGFrame->FrameData." << std::endl;
+            CloseHandle(hSourceFile);
+            free(tmpLPMPEGFrame);
+            ClearMPEGFrames();
+            return;
+        }
+        if(ReadFile(hSourceFile, tmpLPMPEGFrame->FrameData, FrameSize - sizeof(MPEGFrameHeader), NULL, NULL) == FALSE) {
+            std::cerr << "Error: Failed to execute function ReadFile while loading tmpLPMPEGFrame->FrameData." << std::endl;
+            CloseHandle(hSourceFile);
+            free(tmpLPMPEGFrame->FrameData);
+            free(tmpLPMPEGFrame);
+            ClearMPEGFrames();
+            return;
+        }
+        MPEGFrames.push_back(tmpLPMPEGFrame);
     } while(TRUE);
-    //ToDo
+    CloseHandle(hSourceFile);
 }
 
-UINT32 MPEGSegment::GetSamplingFrequency() {
+MPEGTag::~MPEGTag() {
+    ClearMPEGFrames();
+}
 
+UINT32 MPEGTag::GetBitrate(BYTE MPEGVersionID, BYTE LayerID, BYTE BitrateIndex) {
+    if(MPEGVersionID > 3 || LayerID > 3 || BitrateIndex > 15) return 0xFFFFFFFF;
+    switch(MPEGVersionID) {
+        case MPEG10:
+            if(LayerID == Layer1) return BitrateTableForM1L1[BitrateIndex];
+            if(LayerID == Layer2) return BitrateTableForM1L2[BitrateIndex];
+            if(LayerID == Layer3) return BitrateTableForM1L3[BitrateIndex];
+            break;
+        case MPEG20:
+        case MPEG25:
+            if(LayerID == Layer1) return BitrateTableForM2L1[BitrateIndex];
+            if(LayerID == Layer2 || LayerID == Layer3) return BitrateTableForM2L23[BitrateIndex];
+            break;
+        default:
+            break;
+    }
+    return 0xFFFFFFFF;
+}
+
+const LPMPEGFrame MPEGTag::GetMPEGFrame(UINT32 i) {
+    if(i >= MPEGFrames.size()) return NULL;
+    return MPEGFrames[i];
+}
+
+UINT32 MPEGTag::GetMPEGFramesCount() {
+    return MPEGFrames.size();
+}
+
+UINT32 MPEGTag::GetBitrate(const LPMPEGFrame srcFrame) {
+    return GetBitrate(srcFrame->Header.MPEGVersionID, srcFrame->Header.LayerID, srcFrame->Header.BitrateIndex);
+}
+
+UINT32 MPEGTag::GetBitrate(UINT32 i) {
+    if(i >= MPEGFrames.size()) return 0;
+    return GetBitrate(MPEGFrames[i]);
+}
+
+UINT32 MPEGTag::GetSamplingFrequency(UINT32 i) {
+    if(i >= MPEGFrames.size()) return 0;
+    return SamplingFrequencyTable[MPEGFrames[i]->Header.MPEGVersionID][MPEGFrames[i]->Header.FrequencyIndex];
+}
+
+void MPEGTag::ClearMPEGFrames() {
+    UINT32 MPEGFramesCount = MPEGFrames.size();
+    for(UINT32 i = 0; i < MPEGFramesCount; i++) {
+        free(MPEGFrames[i]->FrameData);
+        free(MPEGFrames[i]);
+    }
+    MPEGFrames.clear();
 }

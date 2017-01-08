@@ -87,28 +87,35 @@
 #define WPUB 0x42555057    //[#WPUB Publishers official webpage]
 #define WXXX 0x58585857    //[#WXXX User defined URL link frame]*/
 
-const UINT32 SamplingFrequency[4][4] = {{11025, 12000, 8000, 0},
-                                        {0, 0, 0, 0},
-                                        {22050, 24000, 16000, 0},
-                                        {44100, 48000, 32000, 0}};
+const UINT32 SamplingFrequencyTable[4][4] = {{11025, 12000, 8000, 0},
+                                             {0, 0, 0, 0},
+                                             {22050, 24000, 16000, 0},
+                                             {44100, 48000, 32000, 0}};
+const UINT32 BitrateTableForM1L1[16] = {0, 32000, 64000, 96000, 128000, 160000, 192000, 224000, 256000, 288000, 320000, 352000, 384000, 416000, 448000, 0xFFFFFFFF};
+const UINT32 BitrateTableForM1L2[16] = {0, 32000, 48000, 56000, 64000, 80000, 96000, 112000, 128000, 160000, 192000, 224000, 256000, 320000, 384000, 0xFFFFFFFF};
+const UINT32 BitrateTableForM1L3[16] = {0, 32000, 40000, 48000, 56000, 64000, 80000, 96000, 112000, 128000, 160000, 192000, 224000, 256000, 320000, 0xFFFFFFFF};
+const UINT32 BitrateTableForM2L1[16] = {0, 32000, 48000, 56000, 64000, 80000, 96000, 112000, 128000, 144000, 160000, 176000, 192000, 224000, 256000, 0xFFFFFFFF};
+const UINT32 BitrateTableForM2L23[16] = {0, 8000, 16000, 24000, 32000, 40000, 48000, 56000, 64000, 80000, 96000, 112000, 128000, 144000, 160000, 0xFFFFFFFF};
 
 typedef struct _ID3V2Header {
     char Head[3];  //must be "ID3"(0x49 0x44 0x33)
     BYTE MajorVersion;
     BYTE RevisionNumber;
     struct {
-        BYTE Unsynchronisation_Flag : 1;
-        BYTE ExtendedHeader_Flag : 1;
-        BYTE ExperimentalIndicator_Flag : 1;
         BYTE Reserved : 5;
+        BYTE ExperimentalIndicator_Flag : 1;
+        BYTE ExtendedHeader_Flag : 1;
+        BYTE Unsynchronisation_Flag : 1;
     } Flags;
     BYTE Size[4];
 } ID3V2Header, *LPID3V2Header;
+#define CalculateSize(x) ((((((UINT32)x[0] << 7) + x[1]) << 7) + x[2]) << 7) + x[3]
 
 typedef struct _ID3V2ExtendedHeader {
     BYTE ExtendedHeaderSize[4];
+    UINT16 : 7;
     UINT16 HasTotalFrameCRC : 1;
-    UINT16 Reserved : 15;
+    UINT16 : 8;
     BYTE SizeOfPadding[4];
 } ID3V2ExtendedHeader, *LPID3V2ExtendedHeader;
 
@@ -116,14 +123,14 @@ typedef struct _ID3V2FrameHeader {
     char FrameID[4];
     BYTE Size[4];
     struct {
-        UINT16 TagAlterPreservation_Flag : 1;
-        UINT16 FileAlterPreservation_Flag : 1;
+        UINT16 : 5;
         UINT16 ReadOnly : 1;
-        UINT16 Reserved0 : 5;
-        UINT16 Compression_Flag : 1;
-        UINT16 Encryption_Flag : 1;
+        UINT16 FileAlterPreservation_Flag : 1;
+        UINT16 TagAlterPreservation_Flag : 1;
+        UINT16 : 5;
         UINT16 GroupingIdentity_Flag : 1;
-        UINT16 Reserved1 : 5;
+        UINT16 Encryption_Flag : 1;
+        UINT16 Compression_Flag : 1;
     } Flags;
 } ID3V2FrameHeader, *LPID3V2FrameHeader;
 #define SizeInBYTEToUINT32(x) (UINT32)(x[3]) + 0x100 * x[2] + 0x10000 * x[1] + 0x1000000 * x[0]
@@ -134,19 +141,20 @@ typedef struct _ID3V2Frame {
 } ID3V2Frame, *LPID3V2Frame;
 
 typedef struct _MPEGFrameHeader {
-    UINT32 FrameSyncWord : 11;
-    UINT32 MPEGVersionID : 2;
-    UINT32 LayerID : 2;
+    UINT32 FrameSyncWord0 : 8;
     UINT32 WithoutCRC : 1;
-    UINT32 BitrateIndex : 4;
-    UINT32 FrequencyIndex : 2;
-    UINT32 PaddingBit : 1;
+    UINT32 LayerID : 2;
+    UINT32 MPEGVersionID : 2;
+    UINT32 FrameSyncWord1 : 3;
     UINT32 PrivateBit : 1;
-    UINT32 ChannelMode : 2;
-    UINT32 ModeExtention : 2;
-    UINT32 CopyRight : 1;
-    UINT32 Original : 1;
+    UINT32 PaddingBit : 1;
+    UINT32 FrequencyIndex : 2;
+    UINT32 BitrateIndex : 4;
     UINT32 Emphasis : 2;
+    UINT32 Original : 1;
+    UINT32 CopyRight : 1;
+    UINT32 ModeExtention : 2;
+    UINT32 ChannelMode : 2;
 } MPEGFrameHeader, *LPMPEGFrameHeader;
 
 class ID3V2Tag {
@@ -169,6 +177,8 @@ public:
     UINT32 GetID3V2FrameSize();
     UINT32 GetID3V2FrameCount();
     const LPID3V2Frame GetID3V2Frame(UINT32 i);
+
+    void ClearID3V2_Frames();
 };
 
 typedef struct _MPEGFrame {
@@ -176,15 +186,24 @@ typedef struct _MPEGFrame {
     BYTE* FrameData;
 } MPEGFrame, *LPMPEGFrame;
 
-class MPEGSegment {
+class MPEGTag {
 private:
     std::vector<LPMPEGFrame> MPEGFrames;
     BOOL Valid;
 public:
-    MPEGSegment();
-    MPEGSegment(LPCTSTR FilePath);
+    MPEGTag();
+    MPEGTag(LPCTSTR FilePath);
+    ~MPEGTag();
 
-    UINT32 GetSamplingFrequency();
+    const LPMPEGFrame GetMPEGFrame(UINT32 i);
+    UINT32 GetMPEGFramesCount();
+
+    UINT32 GetSamplingFrequency(UINT32 i);
+    UINT32 GetBitrate(UINT32 i);
+    static UINT32 GetBitrate(BYTE MPEGVersionID, BYTE LayerID, BYTE BitrateIndex);
+    static UINT32 GetBitrate(const LPMPEGFrame srcFrame);
+
+    void ClearMPEGFrames();
 };
 
 #endif // MP3_H_INCLUDED
