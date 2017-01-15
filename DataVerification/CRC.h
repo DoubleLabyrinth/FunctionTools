@@ -28,10 +28,7 @@ public:
 
 class CRC32 {
 private:
-    static BYTE CRC32Table_HH[257];
-    static BYTE CRC32Table_HL[257];
-    static BYTE CRC32Table_LH[257];
-    static BYTE CRC32Table_LL[257];
+    static UINT32 CRC32Table[257];
 
     CRC32();
     static void GenerateTable(UINT32 Polynomial);
