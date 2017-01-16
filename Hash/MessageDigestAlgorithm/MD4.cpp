@@ -24,8 +24,8 @@ HashResult MD4::FromByte(const BYTE* srcByte, UINT64 ByteLength) {
     for(UINT64 i = 0; i < CycleNumber; i++) {
         if(AddCycleFlag && i == CycleNumber - 1) {
             BYTE* Ptr = (BYTE*)X;
-            for(UINT64 j = 0; j < LeftLength; j++) *(Ptr + j) = *(srcByte + i * 64 + j);
-            *(Ptr + LeftLength) = 0x80;
+            for(UINT64 j = 0; j < LeftLength; j++) Ptr[j] = *(srcByte + i * 64 + j);
+            Ptr[LeftLength] = 0x80;
             for(UINT64 j = LeftLength + 1; j < 56; j++) *(Ptr + j) = 0x00;
             *(UINT64*)(Ptr + 56) = LengthInBit;
             M = (const UINT32 (*)[16])X;

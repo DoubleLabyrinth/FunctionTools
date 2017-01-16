@@ -1,13 +1,7 @@
-#ifndef MD4_H
-#define MD4_H
+#ifndef MD4_H_INCLUDED
+#define MD4_H_INCLUDED
+#include "MD_Define.h"
 #include <windows.h>
-
-typedef struct _HashResult {
-    UINT32 A;
-    UINT32 B;
-    UINT32 C;
-    UINT32 D;
-} HashResult, LPHashResult;
 
 class MD4 {
 private:
@@ -16,4 +10,4 @@ public:
     static HashResult FromByte(const BYTE* srcByte, UINT64 ByteLength);
 };
 
-#endif // MD4_H
+#endif // MD4_H_INCLUDED

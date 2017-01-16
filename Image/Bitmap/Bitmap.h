@@ -1,5 +1,5 @@
-#ifndef BITMAP_H
-#define BITMAP_H
+#ifndef BITMAP_H_INCLUDED
+#define BITMAP_H_INCLUDED
 #include <iostream>
 #include <windows.h>
 
@@ -76,4 +76,4 @@ public:
     BOOL SetARGBFromPixel(DWORD dwX, DWORD dwY, Color4B& srcColor4B);
 };
 
-#endif // BITMAP_H
+#endif // BITMAP_H_INCLUDED
