@@ -19,15 +19,15 @@ void CRC8::GenerateTable(BYTE Polynomial) {
 }
 
 BYTE CRC8::GetChecksum(const BYTE* srcData, UINT64 srcDataLength, BYTE GenerationPolynomial) {
-    if(srcDataLength == 0 || srcData == NULL) return 0;
+    if(srcDataLength == 0 || srcData == nullptr) return 0;
     BYTE Result = 0;
     if(GenerationPolynomial != CRC8Table[256]) GenerateTable(GenerationPolynomial);
     for(UINT64 i = 0; i < srcDataLength; i++) Result = CRC8Table[Result ^ srcData[i]];
     return Result;
 }
 
-BOOL CRC8::CheckData(const BYTE* srcData, UINT64 srcDataLength, BYTE GenerationPolynomial, BYTE CRC8Checksum) {
-    return CRC8Checksum == GetChecksum(srcData, srcDataLength, GenerationPolynomial) ? TRUE : FALSE;
+bool CRC8::CheckData(const BYTE* srcData, UINT64 srcDataLength, BYTE GenerationPolynomial, BYTE CRC8Checksum) {
+    return CRC8Checksum == GetChecksum(srcData, srcDataLength, GenerationPolynomial) ? true : false;
 }
 
 UINT16 CRC16::CRC16Table[257] = {0};
@@ -52,7 +52,7 @@ void CRC16::GenerateTable(UINT16 Polynomial) {
 }
 
 UINT16 CRC16::GetChecksum(const BYTE* srcData, UINT64 srcDataLength, UINT16 GenerationPolynomial) {
-    if(srcDataLength == 0 || srcData == NULL) return 0;
+    if(srcDataLength == 0 || srcData == nullptr) return 0;
     UINT16 Result = 0;
     BYTE* pResult = (BYTE*)&Result;
     if(GenerationPolynomial != CRC16Table[256]) GenerateTable(GenerationPolynomial);
@@ -61,8 +61,8 @@ UINT16 CRC16::GetChecksum(const BYTE* srcData, UINT64 srcDataLength, UINT16 Gene
     return Result;
 }
 
-BOOL CRC16::CheckData(const BYTE* srcData, UINT64 srcDataLength, UINT16 GenerationPolynomial, UINT16 CRC16Checksum) {
-    return CRC16Checksum == GetChecksum(srcData, srcDataLength, GenerationPolynomial) ? TRUE : FALSE;
+bool CRC16::CheckData(const BYTE* srcData, UINT64 srcDataLength, UINT16 GenerationPolynomial, UINT16 CRC16Checksum) {
+    return CRC16Checksum == GetChecksum(srcData, srcDataLength, GenerationPolynomial) ? true : false;
 }
 
 UINT32 CRC32::CRC32Table[257] = {0};
@@ -89,7 +89,7 @@ void CRC32::GenerateTable(UINT32 Polynomial) {
 }
 
 UINT32 CRC32::GetChecksum(const BYTE* srcData, UINT64 srcDataLength, UINT32 GenerationPolynomial) {
-    if(srcDataLength == 0 || srcData == NULL) return 0;
+    if(srcDataLength == 0 || srcData == nullptr) return 0;
     UINT32 Result = 0;
     BYTE* pResult = (BYTE*)&Result;
     if(GenerationPolynomial != CRC32Table[256]) GenerateTable(GenerationPolynomial);
@@ -100,8 +100,8 @@ UINT32 CRC32::GetChecksum(const BYTE* srcData, UINT64 srcDataLength, UINT32 Gene
     return Result;
 }
 
-BOOL CRC32::CheckData(const BYTE* srcData, UINT64 srcDataLength, UINT32 GenerationPolynomial, UINT32 CRC32Checksum) {
-    return CRC32Checksum == GetChecksum(srcData, srcDataLength, GenerationPolynomial) ? TRUE : FALSE;
+bool CRC32::CheckData(const BYTE* srcData, UINT64 srcDataLength, UINT32 GenerationPolynomial, UINT32 CRC32Checksum) {
+    return CRC32Checksum == GetChecksum(srcData, srcDataLength, GenerationPolynomial) ? true : false;
 }
 
 UINT64 CRC64::CRC64Table[257] = {0};
@@ -132,7 +132,7 @@ void CRC64::GenerateTable(UINT64 Polynomial) {
 }
 
 UINT64 CRC64::GetChecksum(const BYTE* srcData, UINT64 srcDataLength, UINT64 GenerationPolynomial) {
-    if(srcDataLength == 0 || srcData == NULL) return 0;
+    if(srcDataLength == 0 || srcData == nullptr) return 0;
     UINT64 Result = 0;
     BYTE* pResult = (BYTE*)&Result;
     if(GenerationPolynomial != CRC64Table[256]) GenerateTable(GenerationPolynomial);
@@ -147,6 +147,6 @@ UINT64 CRC64::GetChecksum(const BYTE* srcData, UINT64 srcDataLength, UINT64 Gene
     return Result;
 }
 
-BOOL CRC64::CheckData(const BYTE* srcData, UINT64 srcDataLength, UINT64 GenerationPolynomial, UINT64 CRC64Checksum) {
-    return CRC64Checksum == GetChecksum(srcData, srcDataLength, GenerationPolynomial) ? TRUE : FALSE;
+bool CRC64::CheckData(const BYTE* srcData, UINT64 srcDataLength, UINT64 GenerationPolynomial, UINT64 CRC64Checksum) {
+    return CRC64Checksum == GetChecksum(srcData, srcDataLength, GenerationPolynomial) ? true : false;
 }

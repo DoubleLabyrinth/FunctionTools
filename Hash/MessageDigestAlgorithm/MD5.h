@@ -1,14 +1,14 @@
-#ifndef MD4_H_INCLUDED
-#define MD4_H_INCLUDED
+#ifndef MD5_H_INCLUDED
+#define MD5_H_INCLUDED
 #include "MD_Define.h"
 
-class MD4 {
+class MD5 {
 private:
     static char HashString[33];
-    MD4();
+    MD5();
 public:
     static HashResult GetChecksum(const BYTE* srcByte, UINT64 srcByteLength);
     static const char* GetHashString(HashResult srcHashResult, bool UseUppercase = true);
 };
 
-#endif // MD4_H_INCLUDED
+#endif // MD5_H_INCLUDED

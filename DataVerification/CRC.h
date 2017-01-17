@@ -1,6 +1,6 @@
 #ifndef CRC_H_INCLUDED
 #define CRC_H_INCLUDED
-#include <windows.h>
+#include "../TypeDefine.h"
 
 class CRC8 {
 private:
@@ -10,7 +10,7 @@ private:
     static void GenerateTable(BYTE Polynomial);
 public:
     static BYTE GetChecksum(const BYTE* srcData, UINT64 srcDataLength, BYTE GenerationPolynomial);
-    static BOOL CheckData(const BYTE* srcData, UINT64 srcDataLength, BYTE GenerationPolynomial, BYTE CRC8Checksum);
+    static bool CheckData(const BYTE* srcData, UINT64 srcDataLength, BYTE GenerationPolynomial, BYTE CRC8Checksum);
 };
 
 class CRC16 {
@@ -23,7 +23,7 @@ public:
     /**Here, GenerationPolynomial should use Big-Endian, which means that you should input 0x5623 if you want to set GenerationPolynomial 0x2356 where 0x23 is high 8-bits and 0x56 is low 8-bits.*/
     static UINT16 GetChecksum(const BYTE* srcData, UINT64 srcDataLength, UINT16 GenerationPolynomial);
     /**Here, GenerationPolynomial should use Big-Endian, which means that you should input 0x5623 if you want to set GenerationPolynomial 0x2356 where 0x23 is high 8-bits and 0x56 is low 8-bits. So does CRC16Checksum.*/
-    static BOOL CheckData(const BYTE* srcData, UINT64 srcDataLength, UINT16 GenerationPolynomial, UINT16 CRC16Checksum);
+    static bool CheckData(const BYTE* srcData, UINT64 srcDataLength, UINT16 GenerationPolynomial, UINT16 CRC16Checksum);
 };
 
 class CRC32 {
@@ -36,7 +36,7 @@ public:
     /**Here, GenerationPolynomial should use Big-Endian, which means that you should input 0x78563412 if you want to set GenerationPolynomial 0x12345678 where 0x12 is the highest 8-bits and 0x78 is lowest 8-bits.*/
     static UINT32 GetChecksum(const BYTE* srcData, UINT64 srcDataLength, UINT32 GenerationPolynomial);
     /**Here, GenerationPolynomial should use Big-Endian, which means that you should input 0x78563412 if you want to set GenerationPolynomial 0x12345678 where 0x12 is the highest 8-bits and 0x78 is lowest 8-bits. So does CRC32Checksum.*/
-    static BOOL CheckData(const BYTE* srcData, UINT64 srcDataLength, UINT32 GenerationPolynomial, UINT32 CRC32Checksum);
+    static bool CheckData(const BYTE* srcData, UINT64 srcDataLength, UINT32 GenerationPolynomial, UINT32 CRC32Checksum);
 };
 
 class CRC64 {
@@ -49,6 +49,7 @@ public:
     /**Here, GenerationPolynomial should use Big-Endian, which means that you should input 0xF0DEBC9A78563412 if you want to set GenerationPolynomial 0x123456789ABCDEF0 where 0x12 is the highest 8-bits and 0x78 is lowest 8-bits.*/
     static UINT64 GetChecksum(const BYTE* srcData, UINT64 srcDataLength, UINT64 GenerationPolynomial);
     /**Here, GenerationPolynomial should use Big-Endian, which means that you should input 0xF0DEBC9A78563412 if you want to set GenerationPolynomial 0x123456789ABCDEF0 where 0x12 is the highest 8-bits and 0x78 is lowest 8-bits. So does CRC64Value*/
-    static BOOL CheckData(const BYTE* srcData, UINT64 srcDataLength, UINT64 Generationpolynomial, UINT64 CRC64Checksum);
+    static bool CheckData(const BYTE* srcData, UINT64 srcDataLength, UINT64 Generationpolynomial, UINT64 CRC64Checksum);
 };
+
 #endif // CRC_H_INCLUDED
