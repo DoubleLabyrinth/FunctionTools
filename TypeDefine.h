@@ -1,20 +1,12 @@
 #ifndef TYPEDEFINE_H_INCLUDED
 #define TYPEDEFINE_H_INCLUDED
 
-#ifndef BYTE
-#define BYTE unsigned char
-#endif // BYTE
-
-#ifndef UINT16
-#define UINT16 unsigned short
-#endif // UINT16
-
-#ifndef UINT32
-#define UINT32 unsigned int
-#endif // UINT32
-
-#ifndef UINT64
-#define UINT64 unsigned long long
-#endif // UINT64
+typedef unsigned char BYTE;
+typedef short INT16;
+typedef unsigned short UINT16;
+typedef int INT32;
+typedef unsigned int UINT32;
+typedef long long INT64;
+typedef unsigned long long UINT64;
 
 #endif //TYPEDEFINE_H_INCLUDED
