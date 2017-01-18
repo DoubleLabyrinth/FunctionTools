@@ -1,5 +1,4 @@
 #include "SmartPointer.h"
-#include <iostream>
 
 std::vector<PointerCounter> PointerManager::m_Pointers;
 std::vector<INT64> PointerManager::IndexOfEmptyElement;
@@ -45,7 +44,6 @@ void PointerManager::ReferPointer(void* srcPointer) {
 }
 
 void PointerManager::ReleasePointer(INT64 Index) {
-    std::cout << m_Pointers[Index].ReferenceCount << std::endl;
     if(m_Pointers[Index].ReferenceCount == 1) {
         DestoryPointer(Index);
     } else m_Pointers[Index].ReferenceCount--;
