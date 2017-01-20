@@ -1,17 +1,19 @@
 #include "SmartPointer.h"
 
 std::vector<PointerCounter> PointerManager::m_Pointers;
-std::vector<INT64> PointerManager::IndexOfEmptyElement;
+std::vector<INT32> PointerManager::IndexOfEmptyElement;
 
-PointerManager::PointerManager(void* srcPointer, INT64* dstIndex) {
-    if(srcPointer == nullptr && dstIndex == nullptr) return;
-    if(m_Pointers.size() != 0) {
-        for(INT64 i = m_Pointers.size() - 1; i >= 0; i--) {
-            if(srcPointer == m_Pointers[i].Pointer){
-                m_Pointers[i].ReferenceCount++;
-                *dstIndex = i;
-                return;
-            }
+PointerManager::PointerManager(void* srcPointer, INT32* dstIndex) {
+    if(srcPointer == nullptr) {
+        if(dstIndex == nullptr) return;
+        *dstIndex = -1;
+        return;
+    }
+    for(INT32 i = m_Pointers.size() - 1; i >= 0; i--) {
+        if(srcPointer == m_Pointers[i].Pointer){
+            m_Pointers[i].ReferenceCount++;
+            *dstIndex = i;
+            return;
         }
     }
     if(IndexOfEmptyElement.size() != 0) {
@@ -28,30 +30,32 @@ PointerManager::PointerManager(void* srcPointer, INT64* dstIndex) {
     *dstIndex = m_Pointers.size() - 1;
 }
 
-INT64 PointerManager::GetIndexByPointer(void* srcPointer) {
-    for(INT64 i = m_Pointers.size() - 1; i >= 0; i--) if(m_Pointers[i].Pointer == srcPointer) return i;
+INT32 PointerManager::GetIndexByPointer(void* srcPointer) {
+    for(INT32 i = m_Pointers.size() - 1; i >= 0; i--) if(m_Pointers[i].Pointer == srcPointer) return i;
     return -1;
 }
 
-void PointerManager::ReferPointer(INT64 Index) {
+void PointerManager::ReferPointer(INT32 Index) {
+    if(Index < 0) return;
     m_Pointers[Index].ReferenceCount++;
 }
 
 void PointerManager::ReferPointer(void* srcPointer) {
-    INT64 Index = GetIndexByPointer(srcPointer);
+    INT32 Index = GetIndexByPointer(srcPointer);
     if(Index == -1) return;
     m_Pointers[Index].ReferenceCount++;
 }
 
-void PointerManager::ReleasePointer(INT64 Index) {
+void PointerManager::ReleasePointer(INT32 Index) {
+    if(Index < 0) return;
     if(m_Pointers[Index].ReferenceCount == 1) {
         DestoryPointer(Index);
     } else m_Pointers[Index].ReferenceCount--;
 }
 
 void PointerManager::ReleasePointer(void* srcPointer) {
-    INT64 IndexOfsrcPointer = -1;
-    for(INT64 i = m_Pointers.size() - 1; i >= 0; i--) {
+    INT32 IndexOfsrcPointer = -1;
+    for(INT32 i = m_Pointers.size() - 1; i >= 0; i--) {
         if(m_Pointers[i].Pointer == srcPointer) {
             IndexOfsrcPointer = i;
             break;
@@ -65,7 +69,8 @@ void PointerManager::ReleasePointer(void* srcPointer) {
     }
 }
 
-void PointerManager::DestoryPointer(INT64 Index) {
+void PointerManager::DestoryPointer(INT32 Index) {
+    if(Index < 0) return;
     free(m_Pointers[Index].Pointer);
     m_Pointers[Index].Pointer = nullptr;
     m_Pointers[Index].ReferenceCount = 0;
@@ -73,7 +78,7 @@ void PointerManager::DestoryPointer(INT64 Index) {
 }
 
 void PointerManager::DestoryPointer(void* srcPointer) {
-    INT64 IndexOfsrcPointer = GetIndexByPointer(srcPointer);
+    INT32 IndexOfsrcPointer = GetIndexByPointer(srcPointer);
     if(IndexOfsrcPointer == -1) return;
     DestoryPointer(IndexOfsrcPointer);
 }

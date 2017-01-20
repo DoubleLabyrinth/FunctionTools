@@ -12,13 +12,13 @@ typedef struct _PointerCounter {
 class PointerManager {
 private:
     static std::vector<PointerCounter> m_Pointers;
-    static std::vector<INT64> IndexOfEmptyElement;
+    static std::vector<INT32> IndexOfEmptyElement;
 public:
-    PointerManager(void* srcPointer, INT64* dstIndex);
-    static INT64 GetIndexByPointer(void* srcPointer);
-    static void ReferPointer(INT64 Index);
-    static void ReleasePointer(INT64 Index);
-    static void DestoryPointer(INT64 Index);
+    PointerManager(void* srcPointer, INT32* dstIndex);
+    static INT32 GetIndexByPointer(void* srcPointer);
+    static void ReferPointer(INT32 Index);
+    static void ReleasePointer(INT32 Index);
+    static void DestoryPointer(INT32 Index);
     static void ReferPointer(void* srcPointer);
     static void ReleasePointer(void* srcPointer);
     static void DestoryPointer(void* srcPointer);
@@ -28,7 +28,7 @@ template <class _Type>
 class SmartPointer: private PointerManager {
 private:
     _Type* m_Pointer;
-    INT64 Index;
+    INT32 Index;
 public:
     SmartPointer(_Type* srcPointer) : PointerManager(srcPointer, &Index) {
         m_Pointer = srcPointer;
@@ -38,7 +38,7 @@ public:
         ReleasePointer(Index);
     }
 
-    SmartPointer(const SmartPointer<_Type>& srcSmartPointer) : PointerManager(NULL, NULL) {
+    SmartPointer(const SmartPointer<_Type>& srcSmartPointer) : PointerManager(nullptr, nullptr) {
         m_Pointer = srcSmartPointer.m_Pointer;
         Index = srcSmartPointer.Index;
         ReferPointer(Index);
