@@ -1,6 +1,6 @@
 #include "CRC.h"
 
-BYTE CRC8::CRC8Table[] = {0};
+BYTE CRC8::CRC8Table[257] = {0};
 void CRC8::GenerateTable(BYTE Polynomial) {
     for(UINT16 i = 0; i < 0x100; i++) {
         BYTE Present_i = (BYTE)i;
