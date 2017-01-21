@@ -2,11 +2,11 @@
 #define AES128_H_INCLUDED
 #include "../TypeDefine.h"
 
-class AES128 {
+class AES128Encryption {
 private:
     static BYTE SBox[256];
     static UINT32 Rcon[11];
-    AES128();
+    AES128Encryption();
 public:
     static void Cipher(BYTE srcBytes[16], UINT32 srcExpandedKey[44]);
     static void KeyExpansion(BYTE srcKey[16], UINT32 dstExpandedKey[44]);
