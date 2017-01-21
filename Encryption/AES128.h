@@ -1,5 +1,5 @@
-#ifndef AES128_H_INCLUDED
-#define AES128_H_INCLUDED
+#ifndef AES128_ENCRYPTION_H_INCLUDED
+#define AES128_ENCRYPTION_H_INCLUDED
 #include "../TypeDefine.h"
 
 class AES128Encryption {
@@ -14,4 +14,4 @@ public:
     static void KeyExpansion(BYTE srcKey[16], UINT32 dstExpandedKey[44]);
 };
 
-#endif // AES128_H_INCLUDED
+#endif // AES128_ENCRYPTION_H_INCLUDED
