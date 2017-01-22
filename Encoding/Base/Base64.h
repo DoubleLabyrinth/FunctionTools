@@ -1,7 +1,7 @@
 #ifndef BASE64_H_INCLUDED
 #define BASE64_H_INCLUDED
-#include "../TypeDefine.h"
-#include "../SmartPointer.h"
+#include "../../TypeDefine.h"
+#include "../../SmartPointer.h"
 
 class Base64 {
 private:
@@ -11,6 +11,5 @@ private:
 public:
     static SmartPointer<char> GetEncodedString(const BYTE* srcBytes, UINT64 BytesLength, bool URL_Filename_Safe = false);
 };
-
 
 #endif // BASE64_H_INCLUDED
