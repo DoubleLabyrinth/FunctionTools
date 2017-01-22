@@ -1,6 +1,6 @@
 #ifndef AES128_ENCRYPTION_H_INCLUDED
 #define AES128_ENCRYPTION_H_INCLUDED
-#include "../TypeDefine.h"
+#include "../../TypeDefine.h"
 
 class AES128Encryption {
 private:
