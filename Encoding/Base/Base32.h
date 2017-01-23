@@ -6,6 +6,7 @@
 class Base32 {
 private:
     static char Base32Table[32];
+    Base32();
 public:
     static SmartPointer<char> GetEncodedString(const BYTE* srcBytes, UINT64 BytesLength);
 };

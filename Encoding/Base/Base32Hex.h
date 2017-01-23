@@ -6,6 +6,7 @@
 class Base32Hex {
 private:
     static char Base32HexTable[32];
+    Base32Hex();
 public:
     static SmartPointer<char> GetEncodedString(const BYTE* srcBytes, UINT64 BytesLength);
 };
