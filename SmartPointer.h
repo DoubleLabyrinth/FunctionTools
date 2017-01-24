@@ -14,7 +14,7 @@ private:
     static std::vector<PointerCounter> m_Pointers;
     static std::vector<INT32> IndexOfEmptyElement;
 public:
-    PointerManager(void* srcPointer, INT32* dstIndex);
+    PointerManager(void* srcPointer, INT32& dstIndex);
     static INT32 GetIndexByPointer(void* srcPointer);
     static void ReferPointer(INT32 Index);
     static void ReleasePointer(INT32 Index);
@@ -24,13 +24,17 @@ public:
     static void DestoryPointer(void* srcPointer);
 };
 
-template <class _Type>
+template <typename _Type>
 class SmartPointer: private PointerManager {
 private:
     _Type* m_Pointer;
     INT32 Index;
 public:
-    SmartPointer(_Type* srcPointer) : PointerManager(srcPointer, &Index) {
+    SmartPointer() : PointerManager(nullptr, Index) {
+        m_Pointer = nullptr;
+    }
+
+    SmartPointer(_Type* srcPointer) : PointerManager(srcPointer, Index) {
         m_Pointer = srcPointer;
     }
 
@@ -38,17 +42,28 @@ public:
         ReleasePointer(Index);
     }
 
-    SmartPointer(const SmartPointer<_Type>& srcSmartPointer) : PointerManager(nullptr, nullptr) {
+    SmartPointer(const SmartPointer<_Type>& srcSmartPointer) : PointerManager(nullptr, *(INT32*)nullptr) {
         m_Pointer = srcSmartPointer.m_Pointer;
         Index = srcSmartPointer.Index;
         ReferPointer(Index);
     }
 
+    SmartPointer<_Type>& operator=(_Type* srcPointer) {
+        if(m_Pointer == srcPointer) return *this;
+        PointerManager(srcPointer, Index);
+        m_Pointer = srcPointer;
+        return *this;
+    }
+
+
     SmartPointer<_Type>& operator=(const SmartPointer<_Type>& srcSmartPointer) {
-        if(this == *srcSmartPointer) return *this;
+        if(this == &srcSmartPointer) return *this;
+        if(m_Pointer == srcSmartPointer.m_Pointer) ReferPointer(Index);
+        ReleasePointer(Index);
         m_Pointer = srcSmartPointer.m_Pointer;
         Index = srcSmartPointer.Index;
         ReferPointer(Index);
+        return *this;
     }
 
     _Type& operator*() {
