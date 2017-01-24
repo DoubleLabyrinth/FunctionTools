@@ -50,6 +50,7 @@ public:
 
     SmartPointer<_Type>& operator=(_Type* srcPointer) {
         if(m_Pointer == srcPointer) return *this;
+        ReleasePointer(Index);
         PointerManager(srcPointer, Index);
         m_Pointer = srcPointer;
         return *this;
@@ -58,7 +59,7 @@ public:
 
     SmartPointer<_Type>& operator=(const SmartPointer<_Type>& srcSmartPointer) {
         if(this == &srcSmartPointer) return *this;
-        if(m_Pointer == srcSmartPointer.m_Pointer) ReferPointer(Index);
+        if(m_Pointer == srcSmartPointer.m_Pointer) return *this;
         ReleasePointer(Index);
         m_Pointer = srcSmartPointer.m_Pointer;
         Index = srcSmartPointer.Index;
