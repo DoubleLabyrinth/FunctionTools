@@ -6,7 +6,7 @@
 
 class Base32HexDecoding {
 private:
-    static BYTE InverseBase32HexTable[87];   //So, the largest index is 0x56 which is 'V';
+    static BYTE InverseBase32HexTable[256];
     Base32HexDecoding() = delete;
 public:
     static DecodedBytes GetDecodedBytes(const char* srcBase32String, UINT64 srcStringLength);
