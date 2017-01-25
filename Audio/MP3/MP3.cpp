@@ -250,9 +250,11 @@ MPEGTag::MPEGTag(LPCTSTR FilePath) {
         switch(tmpLPMPEGFrame->Header.LayerID) {
             case Layer1:
                 FrameSize = (12 * GetBitrate(tmpLPMPEGFrame->Header.MPEGVersionID, tmpLPMPEGFrame->Header.LayerID, tmpLPMPEGFrame->Header.BitrateIndex) / SamplingFrequencyTable[tmpLPMPEGFrame->Header.MPEGVersionID][tmpLPMPEGFrame->Header.FrequencyIndex] + tmpLPMPEGFrame->Header.PaddingBit) << 2;
+                break;
             case Layer2:
             case Layer3:
                 FrameSize = 144 * GetBitrate(tmpLPMPEGFrame->Header.MPEGVersionID, tmpLPMPEGFrame->Header.LayerID, tmpLPMPEGFrame->Header.BitrateIndex) / SamplingFrequencyTable[tmpLPMPEGFrame->Header.MPEGVersionID][tmpLPMPEGFrame->Header.FrequencyIndex] + tmpLPMPEGFrame->Header.PaddingBit;
+                break;
         }
         tmpLPMPEGFrame->FrameData = (BYTE*)malloc(FrameSize - sizeof(MPEGFrameHeader));
         if(tmpLPMPEGFrame->FrameData == NULL) {
