@@ -6,7 +6,7 @@
 
 class Base32Decoding {
 private:
-    static BYTE InverseBase32Table[0x5B];   //So, the largest index is 0x5A which is 'Z';
+    static BYTE InverseBase32Table[256];
     Base32Decoding() = delete;
 public:
     static DecodedBytes GetDecodedBytes(const char* srcBase32String, UINT64 srcStringLength);
