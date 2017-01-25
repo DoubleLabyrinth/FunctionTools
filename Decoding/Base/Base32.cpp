@@ -23,7 +23,7 @@ DecodedBytes Base32Decoding::GetDecodedBytes(const char* srcBase32String, UINT64
      */
     if (srcStringLength > 8) {
         srcStringLength -= 8;
-        for(UINT64 i = 0; i < srcStringLength; i++) if(srcBase32String[i] < 0x32 || (srcBase32String[i] > 0x37 && srcBase32String[i] < 0x41) || srcBase32String[i] > 0x5A) return Ret;
+        for(UINT64 i = 0; i < srcStringLength; i++) if(srcBase32String[i] < '2' || (srcBase32String[i] > '7' && srcBase32String[i] < 'A') || srcBase32String[i] > 'Z') return Ret;
         srcStringLength += 8;
     }
 
@@ -32,10 +32,10 @@ DecodedBytes Base32Decoding::GetDecodedBytes(const char* srcBase32String, UINT64
      */
     BYTE PaddingCount = 0;
     for(UINT64 i = srcStringLength - 8; i < srcStringLength; i++) {
-        if(srcBase32String[i] < 0x32 || (srcBase32String[i] != 0x3D && srcBase32String[i] > 0x37 && srcBase32String[i] < 0x41) || srcBase32String[i] > 0x5A) return Ret;
-        if(srcBase32String[i] == 0x3D) PaddingCount++;
+        if(srcBase32String[i] < '2' || (srcBase32String[i] != '=' && srcBase32String[i] > '7' && srcBase32String[i] < 'A') || srcBase32String[i] > 'Z') return Ret;
+        if(srcBase32String[i] == '=') PaddingCount++;
     }
-    for(UINT64 i = srcStringLength - PaddingCount; i < srcStringLength; i++) if(srcBase32String[i] != 0x3D) return Ret;
+    for(UINT64 i = srcStringLength - PaddingCount; i < srcStringLength; i++) if(srcBase32String[i] != '=') return Ret;
 
     /*
      *

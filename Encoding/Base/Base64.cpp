@@ -1,24 +1,25 @@
 #include "Base64.h"
 
-char Base64::Base64Table[64] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                                'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-                                'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-                                'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                                'w', 'x', 'y', 'z', '0', '1', '2', '3',
-                                '4', '5', '6', '7', '8', '9', '+', '/'};
+char Base64Encoding::Base64Table[64] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                                        'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                                        'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                                        'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+                                        'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                                        'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                                        'w', 'x', 'y', 'z', '0', '1', '2', '3',
+                                        '4', '5', '6', '7', '8', '9', '+', '/'};
 
-char Base64::URL_Filename_Safe_Base64Table[64] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                                                  'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                                                  'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                                                  'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-                                                  'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-                                                  'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                                                  'w', 'x', 'y', 'z', '0', '1', '2', '3',
-                                                  '4', '5', '6', '7', '8', '9', '-', '_'};
+char Base64Encoding::URL_Filename_Safe_Base64Table[64] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                                                          'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                                                          'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                                                          'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+                                                          'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                                                          'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                                                          'w', 'x', 'y', 'z', '0', '1', '2', '3',
+                                                          '4', '5', '6', '7', '8', '9', '-', '_'};
 
-SmartPointer<char> Base64::GetEncodedString(const BYTE* srcBytes, UINT64 BytesLength, bool URL_Filename_Safe) {
+SmartPointer<char> Base64Encoding::GetEncodedString(const BYTE* srcBytes, UINT64 BytesLength, bool URL_Filename_Safe) {
+    if(srcBytes == nullptr) return nullptr;
     char* TransTable = URL_Filename_Safe ? URL_Filename_Safe_Base64Table : Base64Table;
     UINT64 TimesOfMainCycle = BytesLength / 3;
     BYTE LeftoverBytesCount = BytesLength % 3;

@@ -5,7 +5,7 @@
 class MD4 {
 private:
     static char HashString[33];
-    MD4();
+    MD4() = delete;
 public:
     static HashResult GetChecksum(const BYTE* srcByte, UINT64 srcByteLength);
     static const char* GetHashString(HashResult srcHashResult, bool UseUppercase = true);

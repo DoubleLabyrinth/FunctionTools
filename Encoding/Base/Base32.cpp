@@ -1,11 +1,12 @@
 #include "Base32.h"
 
-char Base32::Base32Table[32] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                                'Y', 'Z', '2', '3', '4', '5', '6', '7'};
+char Base32Encoding::Base32Table[32] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                                        'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                                        'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                                        'Y', 'Z', '2', '3', '4', '5', '6', '7'};
 
-SmartPointer<char> Base32::GetEncodedString(const BYTE* srcBytes, UINT64 BytesLength) {
+SmartPointer<char> Base32Encoding::GetEncodedString(const BYTE* srcBytes, UINT64 BytesLength) {
+    if(srcBytes == nullptr) return nullptr;
     UINT64 TimesOfMainCycle = BytesLength / 5;
     BYTE LeftoverBytesCount = BytesLength % 5;
     char* Ret = (char*)malloc(sizeof(char) * (TimesOfMainCycle << 3) + (LeftoverBytesCount == 0 ? 1 : 9));

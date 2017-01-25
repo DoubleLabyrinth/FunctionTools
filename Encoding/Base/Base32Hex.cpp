@@ -1,11 +1,12 @@
 #include "Base32Hex.h"
 
-char Base32Hex::Base32HexTable[32] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                                   '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
-                                   'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-                                   'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V'};
+char Base32HexEncoding::Base32HexTable[32] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                                              '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+                                              'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
+                                              'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V'};
 
-SmartPointer<char> Base32Hex::GetEncodedString(const BYTE* srcBytes, UINT64 BytesLength) {
+SmartPointer<char> Base32HexEncoding::GetEncodedString(const BYTE* srcBytes, UINT64 BytesLength) {
+    if(srcBytes == nullptr) return nullptr;
     UINT64 TimesOfMainCycle = BytesLength / 5;
     BYTE LeftoverBytesCount = BytesLength % 5;
     char* Ret = (char*)malloc(sizeof(char) * (TimesOfMainCycle << 3) + (LeftoverBytesCount == 0 ? 1 : 9));

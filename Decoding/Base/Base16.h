@@ -7,7 +7,7 @@
 class Base16Decoding {
 private:
     static BYTE InverseBase16Table[0x47];   //So, the largest index is 0x46 which is 'F';
-    Base16Decoding();
+    Base16Decoding() = delete;
 public:
     static DecodedBytes GetDecodedBytes(const char* srcBase16String, UINT64 srcStringLength);
 };

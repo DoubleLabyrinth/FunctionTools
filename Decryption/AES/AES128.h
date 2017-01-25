@@ -11,7 +11,7 @@ private:
     static BYTE Multiply0x0B[256];
     static BYTE Multiply0x0D[256];
     static BYTE Multiply0x0E[256];
-    AES128Decryption();
+    AES128Decryption() = delete;
 public:
     static void InverseCipher(BYTE srcBytes[16], UINT32 srcExpandedKey[44]);
     static void KeyExpansion(BYTE srcKey[16], UINT32 dstExpandedKey[44]);

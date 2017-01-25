@@ -22,7 +22,7 @@ const BYTE PI_SUBST[256] = {0x29, 0x2E, 0x43, 0xC9, 0xA2, 0xD8, 0x7C, 0x01, 0x3D
 class MD2 {
 private:
     static char HashString[33];
-    MD4();
+    MD2() = delete;
 public:
     static HashResult GetChecksum(const BYTE* srcByte, UINT64 srcByteLength);
     static const char* GetHashString(HashResult srcHashResult, bool UseUppercase = true);
