@@ -1,7 +1,7 @@
 #include "SHA1.h"
 
-SHA1HashResult SHA1::GetChecksum(const BYTE* srcBytes, UINT64 srcBytesLength) {
-    SHA1HashResult Ret;
+Hash::SHA::SHA1::SHA1HashResult Hash::SHA::SHA1::GetChecksum(const BYTE* srcBytes, UINT64 srcBytesLength) {
+    Hash::SHA::SHA1::SHA1HashResult Ret;
     Ret.A = 0x67452301;
     Ret.B = 0xEFCDAB89;
     Ret.C = 0x98BADCFE;

@@ -1,7 +1,7 @@
 #include "MD5.h"
 
-HashResult MD5::GetChecksum(const BYTE* srcBytes, UINT64 srcBytesLength) {
-    HashResult Ret;
+Hash::MDA::HashResult Hash::MDA::MD5::GetChecksum(const BYTE* srcBytes, UINT64 srcBytesLength) {
+    Hash::MDA::HashResult Ret;
     Ret.A = 0x67452301;
     Ret.B = 0xEFCDAB89;
     Ret.C = 0x98BADCFE;
@@ -20,7 +20,33 @@ fin:for(UINT64 i = 0; i < TimesOfMainCycle; i++) {
         CC = Ret.C;
         DD = Ret.D;
 
-        MD5_FF(Ret.A, Ret.B, Ret.C, Ret.D, Ptr[i][0], 7, 0xD76AA478)  //MD5_FF is a MACRO FUNCTION, no need to add ';'
+#define UINT32_ROL(X, Y) X << Y | X >> (32 - Y)
+#define MD5_F(X, Y, Z) ((X & Y) | (~X & Z))
+#define MD5_G(X, Y, Z) ((X & Z) | (Y & ~Z))
+#define MD5_H(X, Y, Z) (X ^ Y ^ Z)
+#define MD5_I(X, Y, Z) (Y ^ (X | ~Z))
+
+#define MD5_FF(A, B, C, D, K, s, T) \
+    A += MD5_F(B, C, D) + K + T;\
+    A = UINT32_ROL(A, s);\
+    A += B;
+
+#define MD5_GG(A, B, C, D, K, s, T) \
+    A += MD5_G(B, C, D) + K + T;\
+    A = UINT32_ROL(A, s);\
+    A += B;
+
+#define MD5_HH(A, B, C, D, K, s, T) \
+    A += MD5_H(B, C, D) + K + T;\
+    A = UINT32_ROL(A, s);\
+    A += B;
+
+#define MD5_II(A, B, C, D, K, s, T) \
+    A += MD5_I(B, C, D) + K + T;\
+    A = UINT32_ROL(A, s);\
+    A += B;
+
+        MD5_FF(Ret.A, Ret.B, Ret.C, Ret.D, Ptr[i][0], 7, 0xD76AA478)  //MD5_FF is a MACRO, no need to add ';'
         MD5_FF(Ret.D, Ret.A, Ret.B, Ret.C, Ptr[i][1], 12, 0xE8C7B756)
         MD5_FF(Ret.C, Ret.D, Ret.A, Ret.B, Ptr[i][2], 17, 0x242070DB)
         MD5_FF(Ret.B, Ret.C, Ret.D, Ret.A, Ptr[i][3], 22, 0xC1BDCEEE)
@@ -88,6 +114,16 @@ fin:for(UINT64 i = 0; i < TimesOfMainCycle; i++) {
         MD5_II(Ret.C, Ret.D, Ret.A, Ret.B, Ptr[i][2], 15, 0x2AD7D2BB)
         MD5_II(Ret.B, Ret.C, Ret.D, Ret.A, Ptr[i][9], 21, 0xEB86D391)
 
+#undef UINT32_ROL
+#undef MD5_F
+#undef MD5_G
+#undef MD5_H
+#undef MD5_I
+#undef MD5_FF
+#undef MD5_GG
+#undef MD5_HH
+#undef MD5_II
+
         Ret.A += AA;
         Ret.B += BB;
         Ret.C += CC;
@@ -106,14 +142,4 @@ fin:for(UINT64 i = 0; i < TimesOfMainCycle; i++) {
     }
 
     return Ret;
-}
-
-char MD5::HashString[33] = {0};
-const char* MD5::GetHashString(HashResult srcHashResult, bool UseUppercase) {
-    char TransTable[] = "0123456789ABCDEF";
-    if(!UseUppercase) for(BYTE i = 10; i < 16; i++) TransTable[i] = 'a' - 10 + i;
-    BYTE* Ptr = (BYTE*)&srcHashResult;
-    for(BYTE i = 0; i < 32; i += 2) HashString[i] = TransTable[(Ptr[i >> 1] & 0xF0) >> 4];
-    for(BYTE i = 1; i < 32; i += 2) HashString[i] = TransTable[Ptr[i >> 1] & 0x0F];
-    return HashString;
 }
