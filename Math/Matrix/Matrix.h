@@ -1,7 +1,6 @@
 #ifndef MATH_MATRIX_H_INCLUDED
 #define MATH_MATRIX_H_INCLUDED
 #include "../../TypeDefine.h"
-#include <memory>
 
 template<typename _Tp>
 class Matrix {
@@ -41,8 +40,12 @@ public:
         RowCount = srcMatrix.RowCount;
         ColumnCount = srcMatrix.ColumnCount;
 
-        Data = new _Tp[RowCount][ColumnCount];
-        memcpy(Data, srcMatrix.Data, RowCount * ColumnCount);
+        Data = new _Tp*[RowCount];
+        for(UINT32 i = 0; i < RowCount; i++) {
+            Data[i] = new _Tp[ColumnCount]();
+            for(UINT32 j = 0; j < ColumnCount; j++) Data[i][j] = srcMatrix.Data[i][j];
+        }
+        //memcpy(Data, srcMatrix.Data, sizeof(_Tp) * RowCount * ColumnCount);   //I think it is not safe.
     }
 
     ~Matrix() {
@@ -55,7 +58,7 @@ public:
 
     bool SetElement(_Tp& srcData, UINT32 srcRowIndex, UINT32 srcColumnIndex) {
         if(srcRowIndex >= 0 && srcRowIndex < RowCount && srcColumnIndex >= 0 && srcColumnIndex < ColumnCount) {
-            Data[srcRowIndex][srcRowIndex] = srcData;
+            Data[srcRowIndex][srcColumnIndex] = srcData;
             return true;
         }
         return false;
